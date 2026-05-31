@@ -1,65 +1,130 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="IDS - Diseño", layout="wide")
-st.title("🔐 Sistema de Detección de Intrusos (IDS)")
+st.set_page_config(
+    page_title="Sistema IDS",
+    layout="wide"
+)
 
-# -------------------------------
-# SIDEBAR (CONTROL)
-# -------------------------------
+st.title("🔐 Sistema de Detección de Intrusiones")
+
+# -----------------------------------
+# SIDEBAR
+# -----------------------------------
+
 st.sidebar.header("⚙️ Control del sistema")
+
 st.sidebar.button("▶️ Iniciar monitoreo")
 st.sidebar.button("⏹️ Detener monitoreo")
 
-# -------------------------------
+# -----------------------------------
 # MÉTRICAS
-# -------------------------------
+# -----------------------------------
+
 col1, col2 = st.columns(2)
-col1.metric("📦 Total paquetes", "12,540")
-col2.metric("🚨 Ataques detectados", "342")
 
-# -------------------------------
-# LAYOUT PRINCIPAL
-# -------------------------------
-col_left, col_right = st.columns([2, 1])
+with col1:
+    st.metric(
+        "📦 Total de paquetes",
+        "12,540"
+    )
 
-# -------------------------------
-# IZQUIERDA → TRÁFICO + RESULTADOS
-# -------------------------------
-with col_left:
-    st.subheader("📡 Tráfico de red")
-    df_trafico = pd.DataFrame({
-        "Protocol": ["TCP", "UDP", "ICMP", "TCP"],
-        "Length": [60, 120, 98, 75],
-        "Estado": ["Normal", "Normal", "Ataque", "Normal"]
-    })
-    st.dataframe(df_trafico)
+with col2:
+    st.metric(
+        "🚨 Alertas generadas",
+        "342"
+    )
 
-    st.subheader("🔍 Resultados del modelo")
-    df_resultados = pd.DataFrame({
-        "Protocol": ["TCP", "ICMP", "UDP"],
-        "Length": [60, 98, 120],
-        "Predicción": ["Normal", "DoS", "Normal"]
-    })
-    st.dataframe(df_resultados)
+st.divider()
 
-# -------------------------------
-# DERECHA → ALERTAS
-# -------------------------------
-with col_right:
-    st.subheader("🚨 Alertas")
-    df_alertas = pd.DataFrame({
-        "Tipo de ataque": ["DoS", "Port Scan"],
-        "Hora": ["10:32:10", "10:35:22"],
-        "Nivel de riesgo": ["Alto", "Medio"]
-    })
-    st.dataframe(df_alertas)
+# -----------------------------------
+# TRÁFICO DE RED
+# -----------------------------------
 
-# -------------------------------
-# GRÁFICO
-# -------------------------------
-st.subheader("📊 Comportamiento del tráfico")
-chart_data = pd.DataFrame({
-    "Ataques": [5, 10, 7, 12]
+st.subheader("📡 Tráfico de red")
+
+df_trafico = pd.DataFrame({
+    "IP Origen": [
+        "192.168.1.10",
+        "192.168.1.15",
+        "192.168.1.20",
+        "192.168.1.25"
+    ],
+    "IP Destino": [
+        "192.168.1.1",
+        "192.168.1.1",
+        "192.168.1.1",
+        "192.168.1.1"
+    ],
+    "Protocolo": [
+        "TCP",
+        "UDP",
+        "ICMP",
+        "TCP"
+    ],
+    "Longitud": [
+        60,
+        120,
+        98,
+        75
+    ]
 })
+
+st.dataframe(
+    df_trafico,
+    use_container_width=True
+)
+
+st.divider()
+
+# -----------------------------------
+# ALERTAS DETECTADAS
+# -----------------------------------
+
+st.subheader("🚨 Alertas detectadas")
+
+df_alertas = pd.DataFrame({
+    "IP Origen": [
+        "192.168.1.15",
+        "192.168.1.20"
+    ],
+    "Tipo de ataque": [
+        "Port Scan",
+        "DoS"
+    ],
+    "Hora": [
+        "10:35:22",
+        "10:41:08"
+    ],
+    "Nivel de riesgo": [
+        "Medio",
+        "Alto"
+    ]
+})
+
+st.dataframe(
+    df_alertas,
+    use_container_width=True
+)
+
+st.divider()
+
+# -----------------------------------
+# EVOLUCIÓN DEL SISTEMA
+# -----------------------------------
+
+st.subheader("📊 Evolución del tráfico")
+
+chart_data = pd.DataFrame({
+    "Alertas detectadas": [
+        2,
+        5,
+        3,
+        8,
+        6,
+        10,
+        7
+    ]
+})
+
 st.line_chart(chart_data)
