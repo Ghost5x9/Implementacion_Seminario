@@ -354,7 +354,11 @@ def packet_handler(pkt):
 # ==================================================
 
 def start_sniffing():
-    sniff(prn=packet_handler, store=False)
+    sniff(
+        iface="MediaTek Wi-Fi 6 MT7921 Wireless LAN Card",
+        prn=packet_handler,
+        store=False
+    )
 
 
 @app.on_event("startup")
@@ -383,9 +387,9 @@ def metrics():
 
 @app.get("/packets")
 def packets():
-    return packets_buffer[-50:]
+    return packets_buffer
 
 
 @app.get("/alerts")
 def alerts_api():
-    return alerts[-50:]
+    return alerts

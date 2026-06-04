@@ -182,68 +182,80 @@ while True:
 
                     st.info("Esperando tráfico...")
 
-            # ==========================================
-            # ALERTAS
-            # ==========================================
+                # ==========================================
+                # ALERTAS
+                # ==========================================
 
-            with alerts_placeholder.container():
+                with alerts_placeholder.container():
 
-                st.subheader(
-                    "🚨 Alertas detectadas"
-                )
+                    st.subheader("🚨 Alertas detectadas")
+                    st.caption("Registro de eventos de seguridad detectados por el sistema.")
 
-                st.caption(
-                    "Registro de eventos de seguridad detectados por el sistema."
-                )
+                    if not alerts.empty:
 
-                if not alerts.empty:
+                        alert_view = alerts[
+                            [
+                                "Timestamp",
+                                "Source IP",
+                                "Destination IP",
+                                "Prediction",
+                                "Severity"
+                            ]
+                        ].rename(columns={
+                            "Timestamp": "Hora",
+                            "Source IP": "IP Origen",
+                            "Destination IP": "IP Destino",
+                            "Prediction": "Tipo de Ataque",
+                            "Severity": "Nivel de Riesgo"
+                        })
 
-                    alert_view = alerts[
-                        [
-                            "Timestamp",
-                            "Source IP",
-                            "Destination IP",
-                            "Prediction",
-                            "Severity"
-                        ]
-                    ].rename(columns={
-                        "Timestamp": "Hora",
-                        "Source IP": "IP Origen",
-                        "Destination IP": "IP Destino",
-                        "Prediction": "Tipo de Ataque",
-                        "Severity": "Nivel de Riesgo"
-                    })
+                        col1, col2 = st.columns([2, 1])
 
-                    col1, col2 = st.columns([2, 1])
+                        # TABLA ALERTAS
+                        with col1:
+                            st.dataframe(
+                                alert_view,
+                                use_container_width=True,
+                                height=350
+                            )
 
-                    # TABLA ALERTAS
-
-                    with col1:
-
-                        st.dataframe(
-                            alert_view,
-                            use_container_width=True,
-                            height=350
+                        # ==================================================
+                        # NUEVO: Flujos por tipo de clase
+                        # ==================================================
+                        st.subheader("📋 Flujos por tipo de clase")
+                        st.caption(
+                            "Cantidad de flujos por tipo de clase"
                         )
 
-                    # GRÁFICO TIPOS DE ATAQUE
+                        # Cantidad de flujos "Normales" que no generaron alerta
+                        normal_count = max(metrics["total_packets"] - len(alerts), 0)
 
-                    with col2:
+                        # Concatenamos ataques + normales
+                        all_classes = pd.concat([
+                            alerts["Prediction"],
+                            pd.Series(["Normal"] * normal_count)
+                        ])
 
-                        st.subheader(
-                            "📊 Tipos de ataque"
-                        )
+                        class_counts = all_classes.value_counts().sort_index()
 
-                        attack_counts = (
-                            alerts["Prediction"]
-                            .value_counts()
-                        )
+                        # Creamos DataFrame con nombres de columna claros
+                        class_counts_df = pd.DataFrame({
+                            "Tipo de clase": class_counts.index,
+                            "Cantidad": class_counts.values
+                        })
 
-                        st.bar_chart(attack_counts)
+                        st.table(class_counts_df)
 
-                else:
+                        # ==================================================
+                        # GRÁFICO TIPOS DE ATAQUE
+                        # ==================================================
+                        with col2:
+                            st.subheader("📊 Tipos de ataque")
+                            attack_counts = alerts["Prediction"].value_counts()
+                            st.bar_chart(attack_counts)
 
-                    st.success("No se detectaron amenazas")
+                    else:
+                        st.success("No se detectaron amenazas")
 
             # ==========================================
             # HISTÓRICO
