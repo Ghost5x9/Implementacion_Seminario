@@ -25,7 +25,7 @@ flows = {}
 packets_buffer = []
 alerts = []
 
-FLOW_TIMEOUT = 5
+FLOW_TIMEOUT = 15
 
 # ==================================================
 # FLOW ID
@@ -161,91 +161,51 @@ def flow_to_features(flow):
 # ==================================================
 
 def preprocess(df):
-
     df = df.copy()
 
-    num_cols = [
-        'Duration',
-        'Length',
-        'TCP Window Size',
-        'TCP Sequence Number',
-        'ICMP Type'
-    ]
+    # Columnas numéricas
+    num_cols = ['Duration', 'Length', 'TCP Window Size', 'TCP Sequence Number', 'ICMP Type']
 
-    tcp_flags = [
-        'TCP Syn',
-        'TCP ACK',
-        'TCP FIN',
-        'TCP RST',
-        'TCP PSH',
-        'TCP URG'
-    ]
+    # Columnas TCP flags
+    tcp_flags = ['TCP Syn', 'TCP ACK', 'TCP FIN', 'TCP RST', 'TCP PSH', 'TCP URG']
+
+    # Columnas categóricas
+    cat_cols = ['Protocol']
 
     # -------------------------
-    # FLAGS TCP
+    # Inicializar flags TCP
     # -------------------------
-
     for col in tcp_flags:
-
         if col not in df.columns:
             df[col] = 0
-
-        df[col] = (
-            pd.to_numeric(df[col], errors="coerce")
-            .fillna(0)
-            .astype(int)
-        )
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
 
     # -------------------------
-    # NUMÉRICAS
+    # Inicializar numéricas
     # -------------------------
-
     for col in num_cols:
-
         if col not in df.columns:
             df[col] = 0
-
-        df[col] = (
-            pd.to_numeric(df[col], errors="coerce")
-            .fillna(0)
-        )
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
     # -------------------------
-    # PROTOCOL
+    # Protocol
     # -------------------------
-
-    if "Protocol" not in df.columns:
-        df["Protocol"] = "UDP"
-
-    protocol_encoder = le_dict["Protocol"]
-
-    df["Protocol"] = (
-        df["Protocol"]
-        .astype(str)
-        .apply(
-            lambda x:
-            protocol_encoder.transform([x])[0]
-            if x in protocol_encoder.classes_
-            else protocol_encoder.transform(["UDP"])[0]
-        )
+    if 'Protocol' not in df.columns:
+        df['Protocol'] = 'UDP'
+    df['Protocol'] = df['Protocol'].astype(str).apply(
+        lambda x: le_dict['Protocol'].transform([x])[0] if x in le_dict['Protocol'].classes_ else le_dict['Protocol'].transform(['UDP'])[0]
     )
 
     # -------------------------
-    # ESCALADO
+    # Escalar numéricas
     # -------------------------
-
-    df[num_cols] = scaler.transform(
-        df[num_cols]
-    )
+    df[num_cols] = scaler.transform(df[num_cols])
 
     # -------------------------
-    # MISMO ORDEN DEL ENTRENAMIENTO
+    # Reordenar columnas al orden original
     # -------------------------
-
-    df = df.reindex(
-        columns=features,
-        fill_value=0
-    )
+    df = df.reindex(columns=features, fill_value=0)
 
     return df
 
@@ -320,7 +280,7 @@ def packet_handler(pkt):
             print("CONFIANZA:", round(max_prob * 100, 2), "%")
 
             # Umbral de confianza
-            CONFIDENCE_THRESHOLD = 0.95
+            CONFIDENCE_THRESHOLD = 0.7
 
             if pred != "Normal" and max_prob < CONFIDENCE_THRESHOLD:
                 pred = "Normal"
