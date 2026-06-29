@@ -39,7 +39,7 @@ scaler = joblib.load("scaler.pkl")
 # CONFIGURACIÓN
 # ==================================================
 
-NET_IFACE = os.getenv("NET_IFACE", "")
+NET_IFACE = "MediaTek Wi-Fi 6 MT7921 Wireless LAN Card"
 CONFIDENCE_THRESHOLD = 0.8
 DOS_PACKET_THRESHOLD = 500
 

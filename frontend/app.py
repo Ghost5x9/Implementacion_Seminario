@@ -143,34 +143,6 @@ if iniciar_btn and not st.session_state.running:
 if detener_btn and st.session_state.running:
     st.session_state.running = False
 
-# --- Selector de interfaz ---
-st.sidebar.markdown("##### 🌐 Interfaz")
-try:
-    ifaces_resp = requests.get(f"{API}/interfaces", timeout=3).json()
-    ifaces_raw = ifaces_resp.get("interfaces", [])
-    ifaces_friendly = ifaces_resp.get("friendly", ifaces_raw)
-    current_iface = ifaces_resp.get("current", "auto")
-    iface_opts = ["(automática)"] + ifaces_friendly
-    iface_idx = 0
-    if current_iface and current_iface != "auto":
-        for i, name in enumerate(ifaces_raw):
-            if name == current_iface:
-                iface_idx = i + 1
-                break
-    sel_label = st.sidebar.selectbox(
-        "Red a monitorear",
-        options=iface_opts,
-        index=iface_idx,
-        label_visibility="collapsed"
-    )
-    sel_idx = iface_opts.index(sel_label) if sel_label in iface_opts else 0
-    req_iface = "" if sel_idx == 0 else ifaces_raw[sel_idx - 1]
-    active = "" if current_iface == "auto" else current_iface
-    if req_iface != active:
-        requests.post(f"{API}/interface", params={"iface": req_iface}, timeout=3)
-except:
-    st.sidebar.caption("🌐 No se pudieron cargar interfaces")
-
 st.sidebar.markdown("---")
 
 # --- Info de actualización ---
