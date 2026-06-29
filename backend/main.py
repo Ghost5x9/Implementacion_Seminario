@@ -40,7 +40,7 @@ scaler = joblib.load("scaler.pkl")
 # ==================================================
 
 NET_IFACE = os.getenv("NET_IFACE", "")
-CONFIDENCE_THRESHOLD = 0.6
+CONFIDENCE_THRESHOLD = 0.8
 DOS_PACKET_THRESHOLD = 500
 
 # ==================================================
@@ -210,7 +210,7 @@ def packet_handler(pkt):
         umbral = CONFIDENCE_THRESHOLD
         # Paquetes únicos en el flujo → umbral más alto para evitar falsos positivos
         if flow["packets"] <= 3:
-            umbral = max(umbral, 0.75)
+            umbral = max(umbral, 0.9)
 
         if pred != "Normal" and max_prob < umbral:
             pred = "Normal"
